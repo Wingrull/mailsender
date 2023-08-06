@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
+from config import MailBody
+from sender import send_mail
 
 app = FastAPI()
 
@@ -8,6 +10,9 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+@app.post("/send-email")
+async def schedule_mail(req: MailBody, tasks: BackgroundTasks):
+    data = req.dict()
+    tasks.add_task(send_mail, data)
+    return {"status": 200, "message": "email has been scheduled"}
+
